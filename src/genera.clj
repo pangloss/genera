@@ -13,4 +13,6 @@
                 defgen=
                 defmethod*
                 defmethod!
-                defmethod=))
+                defmethod=)
+ (genera.trampoline trampoline bounce
+                    trampolining bouncing))
