@@ -1,5 +1,7 @@
 (ns genera
-  (:require [genera.macros :as m]
+  (:refer-clojure :exclude [trampoline])
+  (:require genera.macros
+            genera.trampoline
             potemkin))
 
 
