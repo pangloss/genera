@@ -1,4 +1,5 @@
-(ns genera.trampoline)
+(ns genera.trampoline
+  (:refer-clojure :exclude [trampoline]))
 
 (defn bounce
   "Mark the given function with `::bounce` so that `trampoline` will call it."
@@ -18,7 +19,7 @@
   implementation and the one in clojure.core. The purpose of the check is to
   prevent accidental trampolining when a function being trampolined could itself
   potentially return a function."
-  {:see-also ["trampoline" "bounce" "trampolining" "bouncing"]}
+  {:see-also ["trampoline" "bounce" "trampolining" "bouncing" "clojure.core/trampoline"]}
   ([f]
    (let [ret (f)]
      (if (and (fn? ret) (contains? (meta ret) ::bounce))
