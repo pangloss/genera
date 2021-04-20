@@ -6,9 +6,9 @@
 
 
 (potemkin/import-vars
- (genera.macros defgeneric
-                defgeneric*
-                defgeneric=
+ (genera.macros defgenera
+                defgenera*
+                defgenera=
                 defgen
                 defgen*
                 defgen!

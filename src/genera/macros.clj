@@ -2,7 +2,7 @@
   (:require [genera.core :as c]
             [clojure.core.memoize :as memo]))
 
-(defmacro defgeneric [name arity & fn-tail]
+(defmacro defgenera [name arity & fn-tail]
   (let [[doc & fn-tail] (if (string? (first fn-tail))
                           fn-tail
                           (cons nil fn-tail))]
@@ -10,9 +10,9 @@
          (alter-meta! (var ~name) merge {:doc ~doc :arglists (list '~(first fn-tail))})
          (var ~name))))
 
-(defmacro defgeneric*
+(defmacro defgenera*
   ([name arity default-handler]
-   `(defgeneric* ~name ~arity nil ~default-handler))
+   `(defgenera* ~name ~arity nil ~default-handler))
   ([name arity doc default-handler]
    `(let [handler# ~default-handler]
       (def ~name (c/generic-procedure-constructor '~name ~arity handler#))
@@ -27,11 +27,11 @@
 
       (var ~name))))
 
-(defmacro defgeneric=
+(defmacro defgenera=
   ([name arity default-value]
-   `(defgeneric= ~name ~arity nil ~default-value))
+   `(defgenera= ~name ~arity nil ~default-value))
   ([name arity doc default-value]
-   `(defgeneric* ~name ~arity ~doc (constantly ~default-value))))
+   `(defgenera* ~name ~arity ~doc (constantly ~default-value))))
 
 (defmacro defgen [generic handlers & fn-tail]
   `(c/assign-handler! ~generic (fn ~@fn-tail) ~@handlers))
