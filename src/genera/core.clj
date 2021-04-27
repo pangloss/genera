@@ -115,7 +115,8 @@
 ;; Standard predicate matcher patterns
 
 (defn match-args [& preds]
-  [preds])
+  (mapv #(or % (constantly true))
+        preds))
 
 (defn all-args [arity predicate]
   [(vec (repeat arity predicate))])
@@ -179,3 +180,8 @@
 
 (defn generic-procedure-handlers [proc]
   (map :handler (generic-procedure-rules proc)))
+
+(defn specialize
+  "Allow pre-selecting a defgen specialization for inside an inner loop, etc."
+  [procedure & args]
+  (get-generic-procedure-handler (meta procedure) args))

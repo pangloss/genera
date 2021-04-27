@@ -1,6 +1,7 @@
 (ns genera
   (:refer-clojure :exclude [trampoline])
   (:require genera.macros
+            genera.core
             genera.trampoline
             potemkin))
 
@@ -16,5 +17,6 @@
                 defmethod*
                 defmethod!
                 defmethod=)
+ (genera.core specialize)
  (genera.trampoline trampoline bounce
                     trampolining bouncing))
