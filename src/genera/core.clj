@@ -1,5 +1,6 @@
 (ns genera.core
-  (:require [genera.trie :as trie]))
+  (:require [genera.trie :as trie]
+            [genera.multimethod :as gm]))
 
 ;; To make the predicate dispatch system cacheable, I would need to split up
 ;; generating a value from the argument and then evaluating whether that
@@ -200,7 +201,9 @@
   ((((meta generic-procedure) :store) :get-handler-with-pred) = applicability))
 
 (defn specialize
-  "Allow pre-selecting a defgen specialization for inside an inner loop, etc."
+  "Allow pre-selecting a defgen or defmethod specialization for inside an inner loop, etc."
   {:see-also ["find-handler"]}
   [procedure & args]
-  (get-generic-procedure-handler (meta procedure) args))
+  (if (instance? clojure.lang.MultiFn procedure)
+    (apply gm/dispatch-fn procedure args)
+    (get-generic-procedure-handler (meta procedure) args)))
