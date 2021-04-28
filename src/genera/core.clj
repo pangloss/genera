@@ -115,8 +115,8 @@
 ;; Standard predicate matcher patterns
 
 (defn match-args [& preds]
-  (mapv #(or % (constantly true))
-        preds))
+  [(mapv #(or % (constantly true))
+         preds)])
 
 (defn all-args [arity predicate]
   [(vec (repeat arity predicate))])
