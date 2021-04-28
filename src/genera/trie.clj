@@ -50,6 +50,31 @@
   (->> (get-matching-tries trie features)
        (keep (fn [^Trie t] (.value t)))))
 
+
+(defn find-all-edges-with-pred [^Trie trie pred feature]
+  (->> (.edges trie)
+       (keep (fn [^Edge edge]
+               (when (pred (.ev edge) feature)
+                 (.trie edge))))))
+
+(defn get-matching-tries-with-pred [trie pred features]
+  (loop [tries [trie]
+         features features]
+    (if (seq features)
+      (let [feature (first features)]
+        (recur (mapcat (fn [trie]
+                         (find-all-edges-with-pred trie pred feature))
+                       tries)
+               (rest features)))
+      tries)))
+
+(defn get-all-values-with-pred [trie pred features]
+  (->> (get-matching-tries-with-pred trie pred features)
+       (keep (fn [^Trie t] (.value t)))))
+
+(defn get-a-value-with-pred [trie pred features]
+  (first (get-all-values-with-pred trie pred features)))
+
 (defn get-a-value-by-filtering [trie features]
   (first (get-all-values trie features)))
 

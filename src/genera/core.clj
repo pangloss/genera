@@ -56,6 +56,12 @@
                       (when (predicates-match? (:preds rule) args)
                         (:handler rule)))
                     @rules))
+            (get-handler-with-pred [pred args]
+              (some (fn [rule]
+                      (when (every? (fn [[p a]] (pred p a))
+                                    (map vector (:preds rule) args))
+                        (:handler rule)))
+                    @rules))
             (add-handler! [applicability handler]
               ;; If the rule is already present, just change the handler. Otherwise add the rule.
               ;; Some appl. specs generate multiple applicabilities. For instance `any-arg`.
@@ -80,6 +86,7 @@
         (case message
           :get-handler get-handler
           :add-handler! add-handler!
+          :get-handler-with-pred get-handler-with-pred
           :get-default-handler get-default-handler
           :set-default-handler! set-default-handler!
           :get-rules (fn [] @rules)
@@ -90,6 +97,8 @@
         trie (atom (trie/make-trie))]
     (letfn [(get-handler [args]
               (trie/get-a-value @trie args))
+            (get-handler-with-pred [pred args]
+              (trie/get-a-value-with-pred @trie pred args))
             (add-handler! [applicability handler]
               ((delegate :add-handler!) applicability handler)
               (swap! trie
@@ -101,6 +110,7 @@
       (fn [message]
         (case message
           :get-handler get-handler
+          :get-handler-with-pred get-handler-with-pred
           :add-handler! add-handler!
           (delegate message))))))
 
@@ -166,6 +176,7 @@
 (defn define-generic-procedure-handler [generic-procedure applicability handler]
   ((((meta generic-procedure) :store) :add-handler!) applicability handler))
 
+
 (defn assign-handler! [procedure handler & preds]
   (define-generic-procedure-handler procedure (apply match-args preds) handler))
 
@@ -181,7 +192,15 @@
 (defn generic-procedure-handlers [proc]
   (map :handler (generic-procedure-rules proc)))
 
+(defn find-handler
+  "This is similar to [[specialize]] but uses the actual applicability
+  predicates to find the function rather than using an example."
+  {:see-also ["specialize"]}
+  [generic-procedure applicability]
+  ((((meta generic-procedure) :store) :get-handler-with-pred) = applicability))
+
 (defn specialize
   "Allow pre-selecting a defgen specialization for inside an inner loop, etc."
+  {:see-also ["find-handler"]}
   [procedure & args]
   (get-generic-procedure-handler (meta procedure) args))
