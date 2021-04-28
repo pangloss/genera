@@ -17,6 +17,6 @@
                 defmethod*
                 defmethod!
                 defmethod=)
- (genera.core specialize)
+ (genera.core specialize find-handler)
  (genera.trampoline trampoline bounce
                     trampolining bouncing))
