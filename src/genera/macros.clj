@@ -6,7 +6,7 @@
   (let [[doc & fn-tail] (if (string? (first fn-tail))
                           fn-tail
                           (cons nil fn-tail))]
-    `(do (def ~name (c/generic-procedure-constructor '~name ~arity (fn ~@fn-tail)))
+    `(do (def ~name (c/generic-procedure-constructor '~name ~arity (fn ~name ~@fn-tail)))
          (alter-meta! (var ~name) merge {:doc ~doc :arglists (list '~(first fn-tail))})
          (var ~name))))
 
@@ -34,7 +34,7 @@
    `(defgenera* ~name ~arity ~doc (constantly ~default-value))))
 
 (defmacro defgen [generic handlers & fn-tail]
-  `(c/assign-handler! ~generic (fn ~@fn-tail) ~@handlers))
+  `(c/assign-handler! ~generic (fn ~(symbol (name generic)) ~@fn-tail) ~@handlers))
 
 (defmacro defgen* [generic handlers fn]
   `(c/assign-handler! ~generic ~fn ~@handlers))

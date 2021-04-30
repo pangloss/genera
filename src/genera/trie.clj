@@ -1,8 +1,6 @@
-(ns genera.trie)
-
-(defrecord Trie [value edges])
-
-(defrecord Edge [ev trie])
+(ns genera.trie
+  (:require [genera.types :refer [->Trie ->Edge]])
+  (:import (genera.types Trie Edge)))
 
 (defn make-trie []
   (->Trie nil []))
