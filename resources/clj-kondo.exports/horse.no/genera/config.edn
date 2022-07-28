@@ -1,0 +1,10 @@
+{:hooks
+ {:macroexpand {
+                genera/defgenera horse.no.genera-hooks/defgenera
+                genera/defgenera* horse.no.genera-hooks/defgenera*
+                genera/defgenera= horse.no.genera-hooks/defgenera=
+                genera/defgen horse.no.genera-hooks/defgen
+                genera.macros/defgenera horse.no.genera-hooks/defgenera
+                genera.macros/defgenera* horse.no.genera-hooks/defgenera*
+                genera.macros/defgenera= horse.no.genera-hooks/defgenera=
+                genera.macros/defgen horse.no.genera-hooks/defgen}}}

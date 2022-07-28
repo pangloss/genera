@@ -1,4 +1,4 @@
-(ns genera-hooks)
+(ns horse.no.genera-hooks)
 
 (defmacro defgenera
   "Do not use. This is for clj-kondo linting / lsp support only"
@@ -9,21 +9,16 @@
 (defmacro defgenera*
   "Do not use. This is for clj-kondo linting / lsp support only"
   [name arity & etc]
-  `(defn ~name [~@(repeat arity gensym)]))
+  `(defn ~name [~@(repeat arity gensym)] ~@etc))
 
 
 (defmacro defgenera=
   "Do not use. This is for clj-kondo linting / lsp support only"
   [name arity & etc]
-  `(defn ~name [~@(repeat arity gensym)]))
+  `(defn ~name [~@(repeat arity gensym)] ~@etc))
 
 
 (defmacro defgen
   "Do not use. This is for clj-kondo linting / lsp support only"
-  [name arity & etc]
-  `(defn ~name [~@(repeat arity gensym)]))
-
-(defmacro defgen
-  "Do not use. This is for clj-kondo linting / lsp support only"
-  [name _ & fn-tail]
-  `(defn ~name ~@fn-tail))
+  [name dispatch & etc]
+  `(defn ~name ~@etc))
