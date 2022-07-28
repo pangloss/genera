@@ -82,8 +82,10 @@ Dispatch is done through a pluggable system.
 If the arity is 1, the `make-simple-dispatch-store` is used by default.
 With a higher arity, `make-trie-dispatch-store` is used instead.
 
-The simple dispatch store trie walk, minimizing the number of dispatch functions that need to be called.
-
+The simple dispatch store performs a simple linear search in the order that the handlers were added.
+The trie dispatch store walks a prefix tree, minimizing the number of dispatch functions that need to be called.
+Because it is pluggable, additional strategies may be added with modest effort.
+For instance, it would add flexibility if the order that dispatch functions are called in could be modified or controlled in some way.
 
 ## Bonus feature! Extended trampoline
 
