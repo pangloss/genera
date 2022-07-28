@@ -20,16 +20,20 @@ This example is pulled from my pattern library.
 The call to `defgenera` defines a `matcher-type` function, arity `1` with an optional docstring.
 The remaining arguments, `[var] :value` are just like a normal function definition. This defines a default handler function that returns `:value` without looking at its `var` argument.
 
+``` clojure
     (require '[genera :refer [defgenera defgen defgen* defgen=]])
 
     (defgenera matcher-type 1
       "Return the type indicator symbol for the variable if it is a matcher."
       [var] :value)
+```
 
 The same function could also be defined with the following variants:
 
+``` clojure
     (defgenera= matcher-type 1 :value)
     (defgenera* matcher-type 1 (constantly :value))
+```
 
 Several matchers are then added, which will be tested in top-down order.
 All three variants of `defgen` are used..
@@ -40,6 +44,7 @@ All three variants of `defgen` are used..
 
 The example:
 
+``` clojure
     (defgen* matcher-type [matcher-form?] matcher-form?)
 
     (defgen matcher-type [simple-named-var?] [x]
@@ -50,6 +55,7 @@ The example:
     (defgen= matcher-type [compiled-matcher?] :compiled-matcher)
     (defgen= matcher-type [compiled*-matcher?] :compiled*-matcher)
     (defgen= matcher-type [fn?] :plain-function)
+```
 
 Just like `defgen` has three variants, `defgenera` also has the equivalent three variants which are used to define the default handler. 
 
@@ -58,13 +64,17 @@ Just like `defgen` has three variants, `defgenera` also has the equivalent three
 
 If the need arises to repeatedly call a generic function where a known handler will be used, you can use `specialize` to refer directly to that handler.
 
+``` clojure
     (specialize matcher-type '??my-simple-named-var) 
     ;; => #function[...]
+```
     
 The function returned will be the one defined in this matcher:
 
+``` clojure
     (defgen matcher-type [simple-named-var?] [x]
       (symbol (apply str (take-while #{\?} (name x)))))
+```
 
 ### Dispatch options
 
@@ -98,6 +108,7 @@ The two methods are equivalent.
 
 The result is either the `success` or `failure` function, which is then called normally.
 
+``` clojure
     (require '[genera :refer [bounce trampoline]])
   
     (defn success [x] (str "Success! It's " x))
@@ -126,8 +137,8 @@ The result is either the `success` or `failure` function, which is then called n
         (trampoline a-> cmds)))
     
     ((state-machine [:a-b :b-c :c-a :a-c :final]) :result)
-
     ;; => "Success! It's :result"
+```
 
 ## License
 
