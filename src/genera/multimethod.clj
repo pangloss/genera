@@ -25,12 +25,21 @@
 (def ^:dynamic *generic-call-tap?* (constantly false))
 (def ^:dynamic *on-generic-call* (constantly nil))
 
-(defmacro defmethod [multifn dispatch-val & fn-tail]
+(defmacro defmethod
+  "This was built to instrument and trace defmethod calls to understand how they
+  are being resolved. In my experiment I replaced all defmethod calls in the
+  SICMUtils project with this version. It worked well and provided a lot of good
+  information that helped me understand the workings of that large and complex
+  project.
+
+  It is likely that the new flow-storm debugger can perform this function much more effectively now.
+  See https://github.com/jpmonettas/flow-storm-debugger/"
+  [multifn dispatch-val & fn-tail]
   (if @instrument-defmethod
     `(let [call-info# {:dispatch ~dispatch-val :name (if (dispatch-val-resolved ~multifn :name)
                                                        (~multifn :name)
                                                        '~multifn)}]
-       (prn "using instrumentation")
+       (println "using instrumentation")
        (core-defmethod ~multifn ~dispatch-val ~@(butlast fn-tail)
                        (let [call-id# (swap! generic-call-id inc)
                              call-info# (assoc call-info# :id call-id# :parent-id (:id (last *generic-call-chain*)))
