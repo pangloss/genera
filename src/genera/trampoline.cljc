@@ -7,7 +7,9 @@
   [f]
   (with-meta f {::bounce true}))
 
-(defn bounce? [x]
+(defn bounce?
+  "Returns true if argument is a function that is tagged with :genera.trampoline/bounce"
+  [x]
   (when (fn? x)
     (::bounce (meta x))))
 

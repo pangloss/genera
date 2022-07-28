@@ -1,48 +1,137 @@
 # genera
 
-FIXME: my new library.
+Maximally flexible multimethods for Clojure.
 
-## Usage
+This library is a full implementation of the methods described in the book Software Design for Flexibility.
 
-FIXME: write usage documentation!
+## How it differs from Clojure's default multimethods
 
-Invoke a library API function from the command-line:
+Built-in multimethods provide a highly flexible multiple dispatch mechanism. 
+The dispatch function is defined together with the multimethod. 
+It sometimes happens that a method a user wants to later add can not be added.
+This problem may be because an argument crashes the dispatch function, or the dispatch function can not distinguish the case from some other function.
 
-    $ clojure -X xn--lgc.genera/foo :a 1 :b '"two"'
-    {:a 1, :b "two"} "Hello, World!"
+The genera-style dispatch mechanism provides a higher degree of flexibility.
+Each method defines a dispatch function for each of its arguments.
 
-Run the project's tests (they'll fail until you edit them):
+### Example Usage
 
-    $ clojure -M:test:runner
+This example is pulled from my pattern library.
+The call to `defgenera` defines a `matcher-type` function, arity `1` with an optional docstring.
+The remaining arguments, `[var] :value` are just like a normal function definition. This defines a default handler function that returns `:value` without looking at its `var` argument.
 
-Build a deployable jar of this library:
+    (require '[genera :refer [defgenera defgen defgen* defgen=]])
 
-    $ clojure -X:jar
+    (defgenera matcher-type 1
+      "Return the type indicator symbol for the variable if it is a matcher."
+      [var] :value)
 
-This will update the generated `pom.xml` file to keep the dependencies synchronized with
-your `deps.edn` file. You can update the version (and SCM tag) information in the `pom.xml` using the
-`:version` argument:
+The same function could also be defined with the following variants:
 
-    $ clojure -X:jar :version '"1.2.3"'
+    (defgenera= matcher-type 1 :value)
+    (defgenera* matcher-type 1 (constantly :value))
 
-Install it locally (requires the `pom.xml` file):
+Several matchers are then added, which will be tested in top-down order.
+All three variants of `defgen` are used..
 
-    $ clojure -X:install
+- `defgen` takes an argument vector and a body which are used to create a handler function.
+- `defgen*` uses a pre-defined function as its handler.
+- `defgen=` returns a constant value.
 
-Deploy it to Clojars -- needs `CLOJARS_USERNAME` and `CLOJARS_PASSWORD` environment
-variables (requires the `pom.xml` file):
+The example:
 
-    $ clojure -X:deploy
+    (defgen* matcher-type [matcher-form?] matcher-form?)
 
-Your library will be deployed to net.clojars.xn--lgc/genera on clojars.org by default.
+    (defgen matcher-type [simple-named-var?] [x]
+      (symbol (apply str (take-while #{\?} (name x)))))
 
-If you don't plan to install/deploy the library, you can remove the
-`pom.xml` file but you will also need to remove `:sync-pom true` from the `deps.edn`
-file (in the `:exec-args` for `depstar`).
+    (defgen= matcher-type [sequential?] :list)
+    (defgen= matcher-type [simple-ref?] '?:ref)
+    (defgen= matcher-type [compiled-matcher?] :compiled-matcher)
+    (defgen= matcher-type [compiled*-matcher?] :compiled*-matcher)
+    (defgen= matcher-type [fn?] :plain-function)
+
+Just like `defgen` has three variants, `defgenera` also has the equivalent three variants which are used to define the default handler. 
+
+
+### Extracting a specific handler
+
+If the need arises to repeatedly call a generic function where a known handler will be used, you can use `specialize` to refer directly to that handler.
+
+    (specialize matcher-type '??my-simple-named-var) 
+    ;; => #function[...]
+    
+The function returned will be the one defined in this matcher:
+
+    (defgen matcher-type [simple-named-var?] [x]
+      (symbol (apply str (take-while #{\?} (name x)))))
+
+### Dispatch options
+
+Dispatch is done through a pluggable system.
+If the arity is 1, the `make-simple-dispatch-store` is used by default.
+With a higher arity, `make-trie-dispatch-store` is used instead.
+
+The simple dispatch store trie walk, minimizing the number of dispatch functions that need to be called.
+
+
+## Bonus feature! Extended trampoline
+
+The built-in `trampoline` function in Clojure will call any function that is returned to it.
+This is problematic if you want to return a function!
+
+The genera trampoline function solves this problem by only calling the function if it is annotated with `:genera.trampoline/bounce`.
+
+This library provides a simple `bounce` helper function to attach that metadata.
+
+I find that this method both makes it clearer why a function is being returned and makes it safer to use trampoline.
+
+### Example trampoline usage
+
+Trampolines tend to appear in fairly complex codebases where the stack depth becomes a limitation.
+In clojuredocs, there is a nice simple state machine example.
+Here, I've extended it and translated it for genera.trampoline.
+
+In the `a->` transition function, `bounce` is used to wrap a simple function.
+In the `b->` and `c->` functions, `bouncing` is used to create and wrap a function.
+The two methods are equivalent.
+
+The result is either the `success` or `failure` function, which is then called normally.
+
+    (require '[genera :refer [bounce trampoline]])
+  
+    (defn success [x] (str "Success! It's " x))
+    (defn failure [x] (str "Oh no! " x))
+    
+    (defn state-machine [cmds]
+      (letfn [(a-> [[transition & rs]]
+                (bounce
+                  #(case transition
+                     :a-b (b-> rs)
+                     :a-c (c-> rs)
+                     failure)))
+              (b-> [[transition & rs]]
+                (bouncing
+                  (case transition
+                    :b-a (a-> rs)
+                    :b-c (c-> rs)
+                    failure)))
+              (c-> [[transition & rs]]
+                (bouncing
+                  (case transition
+                    :c-a (a-> rs)
+                    :c-b (c-> rs)
+                    :final success
+                    failure)))]
+        (trampoline a-> cmds)))
+    
+    ((state-machine [:a-b :b-c :c-a :a-c :final]) :result)
+
+    ;; => "Success! It's :result"
 
 ## License
 
-Copyright © 2021 Dw
+Copyright © 2022 Darrick Wiebe
 
 _EPLv1.0 is just the default for projects generated by `clj-new`: you are not_
 _required to open source this project, nor are you required to use EPLv1.0!_

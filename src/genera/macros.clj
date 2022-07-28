@@ -2,7 +2,15 @@
   (:require [genera.core :as c]
             [clojure.core.memoize :as memo]))
 
-(defmacro defgenera [name arity & fn-tail]
+(defmacro defgenera
+  "Create a new generic dispatch multi-method with the given name and arity.
+
+  This version also defines a function body that will be called in case no
+  [[defgen]]-type method is able to be dispatched. The fn-tail arity must match
+  the specified arity, but otherwise is the same as the body of a clojure
+  (fn ...) expression."
+  {:see-also '[defgenera* defgenera= defgen]}
+  [name arity & fn-tail]
   (let [[doc & fn-tail] (if (string? (first fn-tail))
                           fn-tail
                           (cons nil fn-tail))]
@@ -11,6 +19,12 @@
          (var ~name))))
 
 (defmacro defgenera*
+  "Create a new generic dispatch multi-method with the given name and arity.
+
+  This version is given a default-handler function that will be called in case
+  no [[defgen]]-type method is able to be dispatched. The default-handler must
+  handle the specified arity."
+  {:see-also '[defgenera defgenera= defgen]}
   ([name arity default-handler]
    `(defgenera* ~name ~arity nil ~default-handler))
   ([name arity doc default-handler]
@@ -28,12 +42,29 @@
       (var ~name))))
 
 (defmacro defgenera=
+  "Create a new generic dispatch multi-method with the given name and arity.
+
+  This version is given a default value that will be returned in case
+  no [[defgen]]-type method is able to be dispatched."
+  {:see-also '[defgenera defgenera* defgen]}
   ([name arity default-value]
    `(defgenera= ~name ~arity nil ~default-value))
   ([name arity doc default-value]
    `(defgenera* ~name ~arity ~doc (constantly ~default-value))))
 
-(defmacro defgen [generic handlers & fn-tail]
+(defmacro defgen
+  "Add or update a specialization of a generic dispatch multi-method.
+
+  The generic argument must refer to a method defined by a [[defgenera]]-class macro.
+
+  The handlers argument is a list of handler functions. There must be one
+  handler in each argument position. If all handlers return a truthy value, the
+  function will be dispatched.
+
+  The rest of the arguments are the same as the body of a clojure (fn ...)
+  expression."
+  {:see-also '[defgenera defgen* defgen=]}
+  [generic handlers & fn-tail]
   `(c/assign-handler! ~generic (fn ~(symbol (name generic)) ~@fn-tail) ~@handlers))
 
 (defmacro defgen* [generic handlers fn]
