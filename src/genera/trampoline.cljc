@@ -1,17 +1,23 @@
 (ns genera.trampoline
   (:refer-clojure :exclude [trampoline]))
 
+(defprotocol ITrampoliner
+  (get-fn [_]))
+
+(deftype Trampoliner [f]
+  ITrampoliner
+  (get-fn [_] f))
+
 (defn bounce
   "Mark the given function with `::bounce` so that `trampoline` will call it."
   {:see-also ["trampoline" "bounce" "trampolining" "bouncing"]}
   [f]
-  (with-meta f {::bounce true}))
+  (Trampoliner. f))
 
 (defn bounce?
-  "Returns true if argument is a function that is tagged with :genera.trampoline/bounce"
+  "Returns the function if argument is Trampoliner containing a function to bounce."
   [x]
-  (when (fn? x)
-    (::bounce (meta x))))
+  (when (instance? Trampoliner x) (get-fn x)))
 
 (defn trampoline
   "Trampoline can be used to convert algorithms requiring mutual recursion, or
@@ -28,8 +34,8 @@
   {:see-also ["trampoline" "bounce" "trampolining" "bouncing" "clojure.core/trampoline"]}
   ([f]
    (let [ret (f)]
-     (if (and (fn? ret) (contains? (meta ret) ::bounce))
-       (recur ret)
+     (if (instance? Trampoliner ret)
+       (recur (get-fn ret))
        ret)))
   ([f & args]
    (trampoline (bounce #(apply f args)))))
@@ -42,6 +48,12 @@
 
 (defmacro bouncing
   "Turn the given body into a function to be returned to the enclosing `trampoline` function"
-  {:see-also ["trampoline" "bounce" "trampolining" "bouncing"]}
+  {:see-also ["trampoline" "bounce" "trampolining" "bouncing+"]}
   [& forms]
-  `(bounce (fn [] ~@forms)))
+  `(Trampoliner. (fn [] ~@forms)))
+
+(defmacro bouncing+
+  "Turn the given body into a function to be returned to the enclosing `trampoline` function."
+  {:see-also ["trampoline" "bounce" "trampolining" "bouncing"]}
+  [name & forms]
+  `(Trampoliner. (fn ~name [] ~@forms)))
