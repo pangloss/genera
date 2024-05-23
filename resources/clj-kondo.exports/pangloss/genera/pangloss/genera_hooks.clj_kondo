@@ -1,4 +1,4 @@
-(ns horse.no.genera-hooks)
+(ns pangloss.genera-hooks)
 
 (defmacro defgenera
   "Do not use. This is for clj-kondo linting / lsp support only"

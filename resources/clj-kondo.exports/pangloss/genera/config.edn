@@ -1,0 +1,10 @@
+{:hooks
+ {:macroexpand {
+                genera/defgenera pangloss.genera-hooks/defgenera
+                genera/defgenera* pangloss.genera-hooks/defgenera*
+                genera/defgenera= pangloss.genera-hooks/defgenera=
+                genera/defgen pangloss.genera-hooks/defgen
+                genera.macros/defgenera pangloss.genera-hooks/defgenera
+                genera.macros/defgenera* pangloss.genera-hooks/defgenera*
+                genera.macros/defgenera= pangloss.genera-hooks/defgenera=
+                genera.macros/defgen pangloss.genera-hooks/defgen}}}

@@ -76,11 +76,17 @@
 (defmacro defgen= [generic handlers const]
   `(c/assign-handler! ~generic (constantly ~const) ~@handlers))
 
-(defmacro defmethod* [multifn dispatch-val fn]
+(defmacro defmethod*
+  "Add the given function as a handler"
+  [multifn dispatch-val fn]
   `(. ~multifn clojure.core/addMethod ~dispatch-val ~fn))
 
-(defmacro defmethod! [multifn dispatch-val fn]
+(defmacro defmethod!
+  "Add the given function as a handler. Memoized with lru 1024 deep."
+  [multifn dispatch-val fn]
   `(. ~multifn clojure.core/addMethod ~dispatch-val (memo/lru ~fn :lru/threshold 1024)))
 
-(defmacro defmethod= [multifn dispatch-val value]
+(defmacro defmethod=
+  "Return the given constant when this handler is reached."
+  [multifn dispatch-val value]
   `(. ~multifn clojure.core/addMethod ~dispatch-val (constantly ~value)))
