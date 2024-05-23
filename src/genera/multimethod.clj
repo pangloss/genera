@@ -1,4 +1,5 @@
 (ns genera.multimethod
+  (:require [clojure.set :refer [map-invert]])
   (:refer-clojure :rename {defmethod core-defmethod}))
 
 
@@ -12,7 +13,7 @@
   (fn-for-dispatch-val multimethod (apply dispatch-val multimethod args)))
 
 (defn dispatch-val-resolved [multimethod & args]
-  (get (clojure.set/map-invert (.getMethodTable multimethod))
+  (get (map-invert (.getMethodTable multimethod))
        (apply dispatch-fn multimethod args)))
 
 (def instrument-defmethod
